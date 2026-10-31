@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0d1420">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>桜ヶ丘ストーリー</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Shippori+Mincho:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="ui_x22.css">
+</head>
+<body>
+<div id="app">
+<header><h1>桜ヶ丘ストーリー</h1><div><span id="loop"></span><span id="date"></span></div></header>
+<main>
+<section id="stage"><div id="scene" aria-hidden="true"></div><div id="box"><div id="who" hidden></div><p id="msg" aria-live="polite"></p><div id="btns"></div></div></section>
+<aside id="side" aria-label="ステータス"></aside>
+</main>
+</div>
+<div id="phone" role="dialog" aria-label="スマートフォン"><div class="dev"><div class="scr"><div class="sb"><span id="ptime"></span><button id="pclose" type="button" aria-label="スマホを閉じる">×</button></div><div id="pbody"></div></div></div></div>
+<div id="dt" role="dialog" aria-label="女性の詳細"><div class="dtb"><button id="dtx" type="button" aria-label="閉じる">×</button><div class="dtp" id="dtp"></div><div id="dti"></div></div></div>
+<input type="file" id="imp" accept="application/json" hidden>
+
+<script src="heroines.js"></script>
+<script src="heroines2.js"></script>
+<script src="events.js"></script>
+<script src="baito.js"></script>
+<script src="achieve.js"></script>
+<script src="shop.js"></script>
+<script src="list.js"></script>
+<script src="meet_scenes.js"></script>
+<script src="meet_lines.js"></script>
+<script src="meet_girl.js"></script>
+<script src="meet_mix.js"></script>
+<script src="meet_mix_more.js"></script>
+<script src="meet.js"></script>
+<script src="harem_events.js"></script>
+<script src="harem.js"></script>
+<script src="daily_lines.js"></script>
+<script src="daily_lines_more.js"></script>
+<script src="daily.js"></script>
+<script src="incident_lines.js"></script>
+<script src="incident.js"></script>
+<script src="life.js"></script>
+<script src="key_events.js"></script>
+<script src="harem_more.js"></script>
+<script src="more15.js"></script>
+<script src="harem_x16.js"></script>
+<script src="harem_x17.js"></script>
+<script src="novel_x18.js"></script>
+<script src="harem_x19.js"></script>
+<script src="harem_x20.js"></script>
+<script src="wish.js"></script>
+<script src="illust.js"></script>
+<script src="novel_scenes.js"></script>
+<script src="novel.js"></script>
+<script src="fan_fx.js"></script>
+<script src="text_x21.js"></script>
+<script src="ui_x22.js"></script>
+<script>
+const $=s=>document.querySelector(s),R=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const ST={study:'学力',sport:'体力',art:'直感',charm:'魅力'};
+const SEA=m=>m>=3&&m<=5?['#5b3a66','#c98fa6']:m>=6&&m<=8?['#1f4a66','#6fb0c4']:m>=9&&m<=11?['#5a3320','#d19a5c']:['#1f2c46','#8fa3c7'];
+const PERKS=[['grow','成長の心得','能力の上昇量が毎回+1'],['stamina','鉄の体力','鍛えても疲れにくくなる'],['aura','モテオーラ','周回開始時、全員の好感度+10'],['date','デートの達人','デートの好感度+2'],['genius','秀才の記憶','定期テストの基準が下がる'],['lucky','出会い運','出会いイベントが起きやすい']];
+const APPS_ALL=[['msg','話','メッセージ','#3f8f6b'],['ppl','縁','連絡先','#b0566e'],['cal','暦','カレンダー','#c68a3a'],['me','力','ステータス','#4a6fa5'],['ach','績','実績','#d97706'],['grp','見','見守る会','#16a34a'],['fc','会','ファン会','#e11d74'],['alb','絵','アルバム','#8b5cf6'],['sf','撮','自撮り','#ec4899'],['let','文','手紙','#f43f5e'],['end','結','結末','#0ea5e9'],['hs','奉','ご奉仕','#f97316'],['nv','章','特別章','#0891b2'],['sp','専','専用','#b45309'],['jz','誓','嫉妬ゼロ','#db2777'],['np','報','新聞','#b45309'],['mn','独','独白','#be185d'],['og','隊','親衛隊','#4f46e5'],['cos','着','着せ替え','#f472b6'],['duty','係','専属係','#0d9488'],['pin','球','ピンボール','#7c3aed'],['inbox','届','通知','#e11d74'],['tick','券','お願い券','#f59e0b'],['rep','評','評判','#0ea5e9'],['gv','密','女子会','#a855f7'],['set','設','設定','#6b7280']];
+/* 整理: 重複していた「学園新聞(news)」「心の声(mono)」は非表示(新聞/独白に統一)。ホームは主要アプリのみ、残りは「その他」フォルダへ */
+const APPS_MORE_KEYS=['sf','cos','end','nv','sp','jz','duty','pin','inbox','tick','rep','gv'];
+const APPS=APPS_ALL.filter(a=>!APPS_MORE_KEYS.includes(a[0])).concat([['more','他','その他','#64748b']]);
+const APPS_MORE=APPS_ALL.filter(a=>APPS_MORE_KEYS.includes(a[0]));
+const TTL={msg:'メッセージ',ppl:'連絡先',cal:'カレンダー',me:'ステータス',ach:'実績',grp:'見守る会',fc:'ファンクラブ',duty:'専属係',alb:'アルバム',sf:'自撮り',let:'手紙',end:'結末',hs:'ご奉仕',nv:'特別章',news:'学園新聞',sp:'専用スペース',mono:'女子の心の声',jz:'嫉妬ゼロ宣言',np:'学園新聞',mn:'女子の独白',og:'親衛隊と専用スペース',cos:'着せ替え',pin:'ピンボール',set:'設定'};
+const KEY='sakuragaoka2';
+let CROWD=null,S=null,met=new Set(),Q=[],PA='',PN='',NOTE='',DP=null,CFG={bgm:.5,se:.6};
+
+const H=id=>HEROINES.find(h=>h.id===id),
+ avail=()=>HEROINES.filter(h=>h.rand?!!S.got[h.id]:S.loop>=h.loop&&S.t>=h.from),
+ mon=()=>(S.t+3)%12+1,yr=()=>Math.floor(S.t/12)+1,cap=()=>100+S.loop*40,p=k=>S.perks[k]||0,
+ add=(k,d)=>{const v=S.a[k]=Math.max(0,Math.min(100,(S.a[k]||0)+d));if(d>0&&typeof HB==='number')HB=Math.min(12,HB+Math.ceil(d/2));return v},
+ ensure=()=>{setSchoolName(S.ps||DEF_SCHOOL,1);if(S.pn)setPlayerName(S.pn[0],S.pn[1]);else setPlayerName(DEF_NAME[0],DEF_NAME[1]);S.perks=S.perks||{};S.clear=S.clear||{};S.seen=S.seen||{};S.a=S.a||{};S.got=S.got||{};S.nm=S.nm||{};if(S.ap==null)S.ap=4;
+  if(S.money==null)S.money=START_MONEY;S.items=S.items||{};S.cnt=S.cnt||{};S.ach=S.ach||{};S.mo=S.mo||{};S.moN=S.moN||0;
+  /* 最初の3人などの固定ヒロインは START_FAV の範囲でランダム。抽選で出会う子は、出会う瞬間に rollNew が決める */
+  HEROINES.forEach(h=>{if(!h.rand&&S.a[h.id]==null)S.a[h.id]=R(START_FAV[0],START_FAV[1])});
+  avail().forEach(h=>{if(!S.mo[h.id])S.mo[h.id]=++S.moN})},
+ st=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}},
+ ld=k=>{try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},
+ save=()=>st(KEY,S),
+ bar=(v,m)=>`<i class="bar" style="--w:${Math.min(100,v/m*100)}%"></i>`;
+
+/* 画像(img/番号.jpg)。無いときは名字の仮表示 */
+function pic(h){return `<div class="pic" style="--c:${h.c}"><span>${h.n.split(' ')[0]}</span><img src="img/${h.img}.jpg" alt="${h.n}" width="252" height="352" loading="lazy" decoding="async" onerror="this.remove()"></div>`}
+
+/* 音 */
+let AC=null,BG=null;
+function se(){if(CFG.se<=0)return;try{AC=AC||new AudioContext();const o=AC.createOscillator(),g=AC.createGain();o.frequency.value=880;g.gain.value=.07*CFG.se;o.connect(g);g.connect(AC.destination);o.start();g.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+.12);o.stop(AC.currentTime+.12)}catch(e){}}
+function vol(){if(BG)BG.volume=CFG.bgm}
+function bgm(){if(BG)return;BG=new Audio('snd/bgm.mp3');BG.loop=true;BG.volume=CFG.bgm;BG.play().catch(()=>{})}
+document.addEventListener('click',e=>{if(e.target.closest('button'))se();bgm()});
+CFG=ld('sakuragaoka_cfg')||CFG;
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();DP=e});
+
+/* 画面 */
+function side(){
+ const el=$('#side');
+ if(!S){el.innerHTML='<h2>あそびかた</h2><small>毎月4週ぶんの行動力があり、1週ごとに勉強・運動・散策・バイトなどを選べる。能力が高いほど、新しい出会いも増える。魅力は女子と触れ合うたびに、直感はイベントに積極的に参加するたびに上がる。バイトで稼いだお金は、ショップで使える。3年間で好きな子との好感度を育てよう。卒業後は特典を選んで、強くてニューゲームへ。</small>';$('#date').textContent='';$('#loop').textContent='';return}
+ $('#loop').textContent=`${S.loop+1}周目`;$('#date').textContent=S.fin?'卒業':`${yr()}年目 ${mon()}月`;
+ const [a,b]=SEA(S.fin?3:mon());document.documentElement.style.setProperty('--s1',a);document.documentElement.style.setProperty('--s2',b);
+ document.body.dataset.hs=lifeStage();
+ el.innerHTML=`<h2>通り名</h2><div class="ttl">${moteTitle().name}</div><h2>行動力</h2><div class="ap">${[0,1,2,3].map(i=>`<i class="${i<S.ap?'on':''}"></i>`).join('')}<b>${S.ap}/4</b></div><h2>能力</h2>`
+ +Object.entries(ST).map(([k,l])=>`<div class="st"><span>${l}</span>${bar(S.st[k],cap())}<b>${S.st[k]}</b></div>`).join('')+`<div class="st"><span>疲れ</span>${bar(S.f,10)}<b>${S.f}</b></div><div class="money"><span>所持金</span><b>${yen(S.money)}</b></div><h2 style="margin-top:18px">女性一覧</h2>${listCtl('side')}<div class="lst" data-lbody="side">${listBody('side',rowSide)}</div>`;
+}
+function show(k,t,b){
+ const h=k&&H(k);
+ $('#who').textContent=h?h.n:'';$('#who').hidden=!h;$('#msg').textContent=t;
+ const sc=$('#scene'),mm=S?(S.fin?3:mon()):0,bs=S?[GAME.bg.month.replace('{MM}',String(mm).padStart(2,'0')),GAME.bg.menu]:[GAME.bg.title,GAME.bg.menu];
+ sc.className=h?'hp':'';
+ const chip=S?(S.fin?'<span class="mlabel">卒業</span>':`<span class="mlabel">${mm}月<small>第${Math.min(4,5-S.ap)}週</small><em>${'●'.repeat(S.ap)}${'○'.repeat(4-S.ap)}</em></span>`):'',
+  pt=[0,1,2,3,4,5,6].map(i=>`<i class="pt" style="left:${6+i*14}%;animation-duration:${9+i%3*3}s;animation-delay:${-i*1.7}s"></i>`).join('');
+ sc.innerHTML=`<img class="bg" src="${bs[0]}" data-f="${bs[1]}" alt="" onload="this.parentNode.classList.add('hasbg')" onerror="var f=this.dataset.f;if(f){this.dataset.f='';this.src=f}else this.remove()">`+pt+(h?pic(h):`<div class="big">${S&&!S.fin?mon()+'月':'桜'}</div>`)+chip+(CROWD?crowdHtml(CROWD):(S&&!S.fin?peekHtml():''))+(S&&!S.fin?heartHtml():'');
+ const bt=$('#btns');bt.innerHTML='';
+ b.forEach(([l,f,c,ic])=>{
+  const e=document.createElement('button');e.type='button';if(c)e.className=c;
+  if(ic){const i=document.createElement('i');i.className='ic';i.textContent=ic;e.append(i)}
+  const [t1,...t2]=l.split('\n'),bb=document.createElement('b');bb.textContent=t1;e.append(bb);
+  if(t2.length){const sm=document.createElement('small');sm.textContent=t2.join('\n');e.append(sm)}
+  e.onclick=f;bt.append(e);
+ });
+ side();
+}
+
+/* ===== 主人公の名前 ===== 姓・名を GAME に反映します(S がある間はセーブデータ S.pn にも残ります) */
+function cleanName(v){return String(v||'').replace(/[<>&"'`\\]/g,'').trim().slice(0,12)}
+function setSchoolName(v,quiet){
+ v=cleanName(v).slice(0,12);if(!v)v=DEF_SCHOOL;
+ GAME.school=v;if(S)S.ps=v;if(!quiet)st('sakuragaoka_school',v);
+}
+function setPlayerName(f,g){
+ f=cleanName(f).slice(0,6);g=cleanName(g).slice(0,6);
+ if(!f&&!g){f=DEF_NAME[0];g=DEF_NAME[1]}
+ GAME.family=f;GAME.given=g;GAME.player=f+g;GAME.nick=(f||g)+'くん';
+ if(S)S.pn=[f,g];
+ st('sakuragaoka_name',[f,g]);
+}
+/* ゲーム開始直後に出す名前の入力画面。ok(姓,名) が呼ばれます */
+function nameDialog(ok){
+ const sl=ld('sakuragaoka_school');
+ const d=document.createElement('div');d.id='nmd';
+ let last=ld('sakuragaoka_name');if(!Array.isArray(last))last=DEF_NAME;
+ d.innerHTML=`<form class="nmc"><h2>あなたの名前は？</h2><p>女子たちには「<b id="nmp"></b>」と呼ばれます。</p><div class="nmr"><label>姓<input id="nmf" maxlength="6" value="${last[0]}" autocomplete="off"></label><label>名<input id="nmg" maxlength="6" value="${last[1]}" autocomplete="off"></label></div><label class="nms">学園名<input id="nms" maxlength="12" value="${sl||DEF_SCHOOL}" autocomplete="off"></label><div class="nmb"><button type="button" id="nmd0">初期の名前にする</button><button type="submit" class="p">この名前ではじめる</button></div></form>`;
+ document.body.append(d);
+ const f=d.querySelector('#nmf'),g=d.querySelector('#nmg'),pv=()=>d.querySelector('#nmp').textContent=((f.value.trim()||g.value.trim()||DEF_NAME[0]))+'くん';
+ pv();f.oninput=g.oninput=pv;
+ d.querySelector('#nmd0').onclick=()=>{f.value=DEF_NAME[0];g.value=DEF_NAME[1];d.querySelector('#nms').value=DEF_SCHOOL;pv()};
+ d.querySelector('form').onsubmit=e=>{e.preventDefault();const sv=d.querySelector('#nms').value;d.remove();ok(f.value,g.value,sv)};
+ f.focus();f.select();
+}
+/* 進行(1か月=4週。毎週1回行動し、行動力4を使い切ると月末のイベントへ) */
+function title(){
+ S=null;const sv=ld(KEY),b=[['はじめから',start,'act p','✦']];
+ if(sv&&typeof sv.t==='number')b.push(['つづきから',()=>{S=sv;met=new Set();ensure();S.fin?fin(S.fin.kind,S.fin.k):menu()},'act','▶']);
+ show('','3年間の高校生活で、あなたは誰と卒業式を迎える？\n能力を磨き、出会いを重ね、桜の丘での告白をめざそう。',b);
+}
+function start(){
+ nameDialog((f,g,sc)=>start2(f,g,sc));
+}
+function start2(f,g,sc){
+ S={t:0,loop:0,ap:4,st:{study:20,sport:20,art:20,charm:20},f:0,a:{},perks:{},clear:{},seen:{},got:{},nm:{},fin:null};NOTE='';met=new Set();setPlayerName(f,g);setSchoolName(sc||DEF_SCHOOL);ensure();
+ const ns=avail().filter(h=>!S.seen[h.id]);ns.forEach(h=>S.seen[h.id]=1);
+ /* 導入と最初の出会いを1続きにして、スキップ1回で全部飛ばせるようにする */
+ Novel.play(['opening',...ns.map(h=>'meet_'+h.id)],{},menu);
+}
+function menu(){
+ ensure();const ns=avail().filter(h=>!S.seen[h.id]);
+ if(ns.length){ns.forEach(h=>S.seen[h.id]=1);return Novel.play(ns.map(h=>'meet_'+h.id),{},menu)}
+ if(S.ap<=0)return encounter();
+ if(morningMaybe(menu))return;
+ save();const nt=NOTE;NOTE='';
+ show('',`${nt?nt+'\n':''}${yr()}年目の${mon()}月 第${5-S.ap}週。今週は何をしよう？\n（行動力 残り${S.ap}　所持金 ${yen(S.money)}）`,[
+  ['勉強する\n学力が上がる',()=>act('study'),'act','📖'],
+  ['運動する\n体力が上がる',()=>act('sport'),'act','🏃'],
+  ['散策する\n新しい出会いが増える',()=>act('walk'),'act','🌸'],
+  ['ゆっくり休む\n疲れを回復',()=>act('rest'),'act','☕'],
+  ['バイト\n働いてお金を稼ぐ',()=>baito(),'act','💴'],
+  ['ショップに行く\n買い物は行動力を使わない',()=>shop(),'act','🛍️'],
+  [`号令をかける\n女子を集める（${haremN()}/${HAREM_NEED}人）${haremRank()?'・'+haremRank():''}`,gather,haremN()>=HAREM_NEED?'act':'act off','📣'],
+  [`スマホを見る\n${chatBadge()?'見守る会 未読'+chatBadge()+'件':'連絡・デート・ピンボール'}`,openPhone,'act p','📱']]);
+}
+function next(k,m,a){show(k,m,[['つぎへ',()=>weekEnd(a),'p']])}
+/* 能力を n 上げる(上限 cap())。実際に上がった量を返す。魅力=女子との触れ合い1回につき+1、直感=イベントへの積極参加で+1 */
+function gainSt(k,n){const b=S.st[k];S.st[k]=Math.min(cap(),b+n);return S.st[k]-b}
+function act(k){
+ let m;S.ap--;noteAct(k==='art'?'study':k);
+ if(k==='rest'){S.f=Math.max(0,S.f-3);m='ゆっくり休んだ。疲れがとれた。'}
+ else if(k==='walk'){
+  /* 散策は能力が上がらない代わりに、新しい出会いの抽選が+15%になる(rollNew) */
+  if(Math.random()>=Math.min(.8,.35*p('stamina')))S.f=Math.min(10,S.f+1);
+  m='街をぶらぶら歩いて、いろんな人とすれ違った。\nどこかで新しい出会いがあるかもしれない。'+(S.f>=7?'\n疲れがたまっている。休むのも大切だ。':'');
+ }
+ else{
+  const g=Math.max(1,Math.round((R(1,2)+p('grow'))*(S.f>=7?.5:1)));S.st[k]=Math.min(cap(),S.st[k]+g);
+  if(Math.random()>=Math.min(.8,.35*p('stamina')))S.f=Math.min(10,S.f+1);
+  m=`${ST[k]}が${g}上がった。`+(S.f>=7?'\n疲れがたまり、効率が落ちている。休むのも大切だ。':'');
+ }
+ next('',m,k);
+}
+function date(k,l,g){
+ S.ap=Math.max(0,S.ap-2);
+ const h=H(k),x=g+Math.floor(S.st[h.like]/30)+(S.st.charm>=40?2:0)+2*p('date');let jel=false;
+ add(k,x);met.add(k);noteAct('date',h.n);S.f=Math.min(10,S.f+1);const gc=gainSt('charm',1);
+ avail().forEach(o=>{if(o.id!==k&&S.a[o.id]>=50){add(o.id,-2);jel=true}});
+ const dt=dateTalk(k);
+ next(k,`${l}。穏やかな時間が流れた。`+(dt?'\n'+dt:'')+(gc?'\n魅力が1上がった。':'')+(jel?'\n（このうわさは、ほかの子の耳にも届いたようだ…）':''),'date');
+}
+/* 週の終わり: 新しい出会いの抽選 → 行動力が残っていれば次の週、なければ月末イベント */
+function weekEnd(a){
+ const g=rollNew(a),go=()=>{save();S.ap>0?menu():encounter()},
+  chk=()=>{const o=checkAch();o.length?show('','🏆 実績解除！\n'+o.join('\n'),[['つぎへ',go,'p']]):go()},
+  ach0=()=>{weekExtra(chk)},ach=()=>{(a==='walk'&&introduce(ach0))||ach0()};
+ if(g)return Novel.play('meet_'+g.id,{h:g.id},()=>{const v=S.a[g.id];
+  show(g.id,`${g.n}と知り合った！\n第一印象：${v>=60?'とても好印象！':v>=40?'なかなか好印象':'ふつうの印象'}`,[['つぎへ',ach,'p']])});
+ ach();
+}
+/* 新キャラとの出会い。確率は4能力の平均が高いほど上がり(散策で+15%)、
+   得意能力が req 以上の子だけが候補。得意能力が高い子ほど選ばれやすい。この抽選で出会えるのは1年に YEAR_CAP 人まで。
+   出会ったときの好感度は randFav(魅力)(最低20。魅力が高いと最初から50以上もあり得る。heroines2.js) */
+function rollNew(a){
+ const y=yr();if((S.nm[y]||0)>=YEAR_CAP)return null;
+ const v=S.st,avg=(v.study+v.sport+v.art+v.charm)/4,pr=Math.min(.9,.06+avg/400+(a==='walk'?.15:0));
+ if(Math.random()>=pr)return null;
+ const pool=HEROINES.filter(h=>h.rand&&!S.got[h.id]&&S.loop>=h.loop&&v[h.like]>=h.req);
+ if(!pool.length)return null;
+ const w=pool.map(h=>1+v[h.like]/20);let t=Math.random()*w.reduce((x,y)=>x+y,0),g=pool[pool.length-1];
+ for(let i=0;i<pool.length;i++){t-=w[i];if(t<0){g=pool[i];break}}
+ const base=randFav(v.charm),old=S.a[g.id];S.a[g.id]=old!=null?Math.max(old,base):base;
+ S.got[g.id]=1;S.seen[g.id]=1;S.nm[y]=(S.nm[y]||0)+1;if(!S.mo[g.id])S.mo[g.id]=++S.moN;return g;
+}
+function encounter(){
+ const h=avail()[R(0,avail().length-1)];
+ if(h&&h.ev.length&&Math.random()<Math.min(.95,.6+.1*p('lucky'))){
+  const e=pickNR('ev:'+h.id,h.ev);
+  show(h.id,e.s,e.o.map(([l,d])=>[l,()=>{add(h.id,d);met.add(h.id);const gc=gainSt('charm',1),ga=gainSt('art',1);
+   show(h.id,(d>=5?'「ありがとう、うれしい！」':d>0?'「ふふ、そうだね」':'「…そっか」')+(gc?'\n魅力が1上がった。':'')+(ga?'\n直感が1上がった。':''),[['つぎへ',plan,'p']])}]));
+ }else plan();
+}
+function plan(){
+ const m=mon();Q=[];
+ if(m===7||m===12)Q.push(exam);
+ if(STAR_EVENTS[m])Q.push(()=>starEvent(m,runQ));
+ if((m===3||m===9)&&fcCount()>=100)Q.push(()=>lifeFanFest(runQ));
+ if(TRIPS[m])Q.push(()=>lifeTrip(m,runQ));
+ (MEVENTS[m]||[]).forEach(e=>Q.push(()=>fest(e)));
+ if(m===2)Q.push(choco);
+ runQ();
+}
+function runQ(){const f=Q.shift();f?f():advance()}
+function exam(){
+ const need=20+S.t*2+S.loop*25-8*p('genius'),sc=S.st.study+R(-10,10);let m;
+ if(sc>=need+15){m='定期テストは学年トップクラス！魅力が3上がった。';S.st.charm+=3;avail().forEach(h=>{if(h.like==='study')add(h.id,4)})}
+ else if(sc>=need)m='定期テストは平均以上。まずまずの結果だ。';
+ else{m='定期テストは赤点ぎりぎり…。補習で疲れてしまった。';S.f=Math.min(10,S.f+2)}
+ show('',m,[['つぎへ',runQ,'p']]);
+}
+/* 行事で誘える6人: 好感度50を超える子がいれば、その中からランダムに。足りなければ好感度の高い順に補う */
+function festPick(){
+ const all=avail(),hi=dShuffle(all.filter(h=>S.a[h.id]>50)),lo=all.filter(h=>S.a[h.id]<=50).sort((a,b)=>S.a[b.id]-S.a[a.id]);
+ return hi.concat(lo).slice(0,6);
+}
+function fest(e){
+ const nx=[['つぎへ',runQ,'p']],n=e.n,mn=e.min||20,top=festPick(),all=avail().filter(h=>S.a[h.id]>=mn);
+ const bt=[...top.map(h=>[h.n+'を誘う',()=>{
+  if(S.a[h.id]>=mn){add(h.id,10);met.add(h.id);const gc=gainSt('charm',1),ga=gainSt('art',1);show(h.id,`「うん、いっしょに行こう！」\n${n}は忘れられない思い出になった。`+(gc?'\n魅力が1上がった。':'')+(ga?'\n直感が1上がった。':''),nx)}
+  else show(h.id,'「ごめん、もう予定があるんだ…」',nx)},'','💬']),
+  ['ひとりで過ごす',()=>{let t=e.solo;if(e.st){S.st[e.st]=Math.min(cap(),S.st[e.st]+e.g);t+=`\n${ST[e.st]}が${e.g}上がった。`}show('',t,nx)},'','🚶']];
+ if(all.length>=3)bt.push([`全員と過ごす\n${all.length}人が集まる`,()=>festAll(e,all),'act p','💞']);
+ show('',`${n}の日。${e.sc}\n誰と過ごそう？`,bt);
+}
+/* 全員と過ごす: 女子の小さな顔アイコンが画面にずらりと並び、{K}に甘えてくる(3つの画面)。台詞は events.js の FEST_ALL */
+function festAll(e,g){
+ const nm=dShuffle(g),N=g.length,fm=t=>dailyFmt(t,{a:nm[0].n,b:nm[1].n},{N,M:fcCount()}).replace(/\{event\}/g,e.n);
+ g.forEach(h=>{add(h.id,8);met.add(h.id)});gainSt('charm',1);gainSt('art',1);S.f=Math.min(10,S.f+1);cnt('fest_all');
+ CROWD=g;
+ const fin=()=>{CROWD=null;runQ()};
+ show('',fm(pickNR('fall:o',FEST_ALL.open)),[['つぎへ',()=>show('',fm(pickNR('fall:c',FEST_ALL.cling)),[['つぎへ',()=>show('',fm(pickNR('fall:e',FEST_ALL.end))+'\n（疲れが少したまった。魅力・直感が1上がった）',[['つぎへ',fin,'p']]),'p']]),'p']]);
+}
+function choco(){
+ const g=avail().filter(h=>S.a[h.id]>=40);g.forEach(h=>add(h.id,4));
+ show(g[0]?g[0].id:'',g.length?`バレンタイン。${g.map(h=>h.n).join('と')}からチョコをもらった！`:'バレンタイン。…今年はチョコをもらえなかった。もっと仲良くなろう。',[['つぎへ',runQ,'p']]);
+}
+function advance(){
+ S.t++;avail().forEach(h=>{if(!met.has(h.id))S.a[h.id]=Math.max(0,S.a[h.id]-1)});met=new Set();S.ap=4;S.f=Math.max(0,S.f-2);
+ if(S.t>=36){S.t=35;return ending()}
+ S.money+=ALLOWANCE;NOTE=`今月のお小遣い ${yen(ALLOWANCE)} をもらった。`;{const hm=haremMonthly();if(hm)NOTE+="\n"+hm}{const tn=trendNote();if(tn)NOTE+="\n"+tn}{const fi=fcIncome();if(fi)NOTE+="\n"+fi}{const mn=missionTurn();if(mn)NOTE+="\n"+mn}
+ save();keyEvent(()=>{save();menu()});
+}
+
+/* 卒業と周回 */
+function ending(){
+ const o=avail().map(h=>[h.id,S.a[h.id]]).sort((a,b)=>b[1]-a[1]),[k,v]=o[0]||['',0],kind=haremN()>=HAREM_END_N?'harem':v>=70?'love':v>=45?'friend':'solo';
+ buttonScene(kind,()=>Novel.play(kind==='solo'?'solo':kind==='harem'?{lines:haremEndLines()}:kind+'_'+k,{h:k},()=>fin(kind,kind==='solo'||kind==='harem'?'':k)));
+}
+function fin(kind,k){
+ S.fin={kind,k};if(kind==='harem'){S.hend=(S.hend||0)+1;cnt('harem_end')}if(k){const o=S.clear[k];if(kind==='love'||!o)S.clear[k]=kind}
+ const ac=checkAch();save();const h=k&&H(k);
+ show(k||'',`${S.loop+1}周目クリア\n${h?h.n+'　':''}${{love:'恋人エンド',friend:'友だちエンド',solo:'ひとりエンド',harem:'ハーレムエンド'}[kind]}\n学力${S.st.study}・体力${S.st.sport}・直感${S.st.art}・魅力${S.st.charm}`+(ac.length?'\n'+ac.join('\n'):''),
+  [['強くてニューゲーム',perkPick,'act p','✦'],['最初からやり直す',start,'act','↺'],['タイトルへ',title,'act','⌂']]);
+}
+function perkPick(){
+ const o=[...PERKS].sort(()=>Math.random()-.5).slice(0,3);
+ show('','周回特典を1つ選んでください。特典は周回ごとに積み重なります。\n能力値はそのまま、好感度は半分が引き継がれます。',o.map(([id,n,d])=>[`${n}\n${d}`,()=>nextLoop(id),'act','★']));
+}
+function nextLoop(id){
+ S.perks[id]=p(id)+1;S.loop++;S.t=0;S.f=0;S.ap=4;S.nm={};S.fin=null;S.ke={};S.keN={};S.ms=null;S.msStreak=0;S.wish=null;S.fz=null;met=new Set(); /* 出会った女子(S.got)と連絡先の並び(S.mo)は、周回しても消さずに引き継ぐ */
+ HEROINES.forEach(h=>{if(S.a[h.id]!=null)S.a[h.id]=Math.min(100,Math.floor(S.a[h.id]/2)+10*p('aura'))});
+ ensure();save();Novel.play('rebirth',{loop:S.loop},menu);
+}
+
+/* 女性の詳細(六角形グラフ)。数値は heroines.js の s:{...} */
+const HEX=[['sport','体力'],['study','学力'],['money','財力'],['charm','魅力'],['social','社交'],['lust','愛欲']];
+function hexSvg(s){
+ s=s||{};const c=130,r=84,v=k=>s[k]==null?50:s[k],
+  pt=(i,k)=>{const a=-Math.PI/2+i*Math.PI/3;return [c+Math.cos(a)*r*k,c+Math.sin(a)*r*k]},
+  f=a=>a[0].toFixed(1)+','+a[1].toFixed(1),poly=k=>HEX.map((_,i)=>f(pt(i,k))).join(' ');
+ return `<svg class="hx" viewBox="0 0 260 260" role="img" aria-label="ステータス六角形グラフ">`
+  +[.25,.5,.75,1].map(k=>`<polygon class="gl" points="${poly(k)}"/>`).join('')
+  +HEX.map((_,i)=>{const q=pt(i,1);return `<line class="gl" x1="${c}" y1="${c}" x2="${q[0].toFixed(1)}" y2="${q[1].toFixed(1)}"/>`}).join('')
+  +`<polygon class="pg" points="${HEX.map(([k],i)=>f(pt(i,Math.max(.04,v(k)/100)))).join(' ')}"/>`
+  +HEX.map(([k],i)=>{const q=pt(i,Math.max(.04,v(k)/100));return `<circle cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="3"/>`}).join('')
+  +HEX.map(([k,l],i)=>{const q=pt(i,1.3);return `<text x="${q[0].toFixed(1)}" y="${q[1].toFixed(1)}" text-anchor="middle">${l}</text><text class="v" x="${q[0].toFixed(1)}" y="${(q[1]+14).toFixed(1)}" text-anchor="middle">${v(k)}</text>`}).join('')
+  +'</svg>';
+}
+function openDetail(id){
+ const h=H(id);if(!h)return;const a=S?S.a[id]:0,cl=S&&S.clear[id];
+ $('#dtp').innerHTML=pic(h);
+ $('#dti').innerHTML=`<h3 class="dtn">${h.n}</h3><p>${h.bio||h.intro}</p><div class="dtk"><span>好感度</span><b>${a}</b><span>/ 100</span></div>${bar(a,100)}<p class="rel">この子にとっての${GAME.nick}:<b>${relLabel(a)}</b></p>${hexSvg(h.s)}<p class="hint2">得意:${ST[h.like]}${cl?'　'+(cl==='love'?'恋人エンド達成':'友だちエンド達成'):''}</p>`+(S&&!S.fin?(S.ap>0?`<button type="button" class="p meetb" data-meet="${id}">会いに行く（行動力1）</button>`:'<button type="button" class="meetb" disabled>会いに行く（行動力がありません）</button>'):'')+itemBtns(id);
+ $('#dt').classList.add('on');
+}
+function closeDetail(){$('#dt').classList.remove('on')}
+$('#dtx').onclick=closeDetail;
+$('#dti').onclick=e=>{const b=e.target.closest('[data-meet]');if(b){closeDetail();closePhone();return meetGirl(b.dataset.meet)}
+ const u=e.target.closest('[data-use]');if(u){const [i,g]=u.dataset.use.split(':');closeDetail();closePhone();useItem(i,g)}};
+$('#dt').onclick=e=>{if(e.target.id==='dt')closeDetail()};
+$('#side').onclick=e=>{const d=e.target.closest('[data-hd]');if(d)openDetail(d.dataset.hd)};
+
+/* スマホ */
+function openPhone(){PA='';PN='';drawPhone();$('#phone').classList.add('on')}
+function closePhone(){$('#phone').classList.remove('on');$('#pbody').innerHTML=''}
+function drawPhone(){
+ try{drawPhone0()}catch(e){const b=$('#pbody');if(b)b.innerHTML='<div class="ph"><button type="button" data-go="">‹ ホーム</button><span>エラー</span></div><p class="hint">この画面を開けませんでした。('+String(e&&e.message).replace(/</g,'&lt;')+')</p>';try{console.error(e)}catch(_){}}
+}
+function drawPhone0(){
+ $('#ptime').textContent=`${yr()}年目 ${mon()}月 第${Math.min(4,5-S.ap)}週`;
+ const [a,id]=PA.split(':');let h='';
+ if(!PA)h=`<div class="apps">${APPS.map(([k,g,l,c])=>`<button class="app" type="button" data-go="${k}"><i style="--g:${c}">${g}</i>${l}${k==='grp'&&chatBadge()?`<em class="bdg">${chatBadge()}</em>`:''}</button>`).join('')}</div>`;
+ else{
+  h=`<div class="ph"><button type="button" data-go="">‹ ホーム</button><span>${a==='more'?'その他':(TTL[a]||H(id).n)}</span></div>`;
+  if(a==='more')h+=`<div class="apps">${APPS_MORE.map(([k,g,l,c])=>`<button class="app" type="button" data-go="${k}"><i style="--g:${c}">${g}</i>${l}</button>`).join('')}</div>`;
+  else if(a==='msg'){ROWS.phone=rowMsg;h+=listCtl('phone')+`<div data-lbody="phone">${listBody('phone',rowMsg)}</div>`}
+  else if(a==='chat'){const x=H(id);h+=S.a[id]<15?`<p class="bub">${H(id).n}「あっ、えっと…ごめんね。ちょっと用事があって…」</p><p class="hint">緊張しているみたい。もう少し話しかけてみよう。</p>`:S.ap<2?'<p class="bub">…ごめん、今週はもう予定があるんだ。</p><p class="hint">デートには行動力が2必要です（残り'+S.ap+'）。</p>':`<p class="bub">${x.n}「いいよ、どこに行く？」</p><p class="hint">行き先を選ぶと、行動力を2使います。</p>`+x.spots.map((s,i)=>`<button class="opt" type="button" data-do="spot:${id}:${i}">${s[0]}</button>`).join('')}
+  else if(a==='ppl'){ROWS.phone=rowPpl;h+=listCtl('phone')+`<div data-lbody="phone">${listBody('phone',rowPpl)}</div>`}
+  else if(a==='ach')h+=achHtml();
+  else if(a==='grp')h+=chatHtml();
+  else if(a==='fc')h+=fcHtml();
+  else if(a==='alb')h+=albumHtml();
+  else if(a==='cos')h+=(PN?`<p class="hint ok">${PN.replace(/\n/g,'<br>')}</p>`:'')+cosHtml();
+  else if(a==='let')h+=letHtml();
+  else if(a==='end')h+=endHtml();
+  else if(a==='inbox')h+=(PN?`<p class="hint ok">${PN}</p>`:'')+x40InboxHtml();
+  else if(a==='tick')h+=(PN?`<p class="hint ok">${PN}</p>`:'')+x40TicketHtml();
+  else if(a==='rep')h+=x40RepHtml();
+  else if(a==='gv')h+=x40GvHtml();
+  else if(a==='hs')h+=hsHtml();
+  else if(a==='nv')h+=nvHtml();
+  else if(a==='news')h+=newsHtml();
+  else if(a==='sp')h+=spHtml();
+  else if(a==='mono')h+=monoHtml();
+  else if(a==='jz')h+=jzHtml();
+  else if(a==='np')h+=npHtml();
+  else if(a==='mn')h+=mnHtml();
+  else if(a==='og')h+=orgHtml();
+  else if(a==='sf')h+=(PN?`<p class="hint ok">${PN}</p>`:'')+sfHtml();
+  else if(a==='duty')h+=(PN?`<p class="hint ok">${PN}</p>`:'')+dutyHtml(id);
+  else if(a==='pin')h+='<iframe class="pinf" src="pinball.html" title="NEON PINBALL" allow="autoplay" onload="try{this.contentWindow.focus()}catch(e){}"></iframe>';
+  else if(a==='cal')h+=(()=>{try{return missionHtml()}catch(e){return ''}})()+(()=>{try{return wishHtml()}catch(e){return ''}})()+`<p class="hint">いまは${yr()}年目の${mon()}月です。</p>`+CAL.map(([m,t])=>`<div class="ev${m===mon()?' now':''}"><b>${m}月</b><span>${t}</span></div>`).join('');
+  else if(a==='me')h+=Object.entries(ST).map(([k,l])=>`<div class="st"><span>${l}</span>${bar(S.st[k],cap())}<b>${S.st[k]}</b></div>`).join('')+`<div class="st"><span>疲れ</span>${bar(S.f,10)}<b>${S.f}</b></div><div class="money"><span>所持金</span><b>${yen(S.money)}</b></div><p class="hint">${S.loop+1}周目 ／ 能力の上限 ${cap()}　／　これまでの稼ぎ ${yen(S.earn||0)}</p>`+lifeGauge()+`<p class="hint">通り名「${moteTitle().name}」／ ファンクラブ会員 ${fcCount()}人</p>`+(PERKS.filter(x=>p(x[0])).map(x=>`<div class="ev"><b>${x[1]} ×${p(x[0])}</b><span>${x[2]}</span></div>`).join('')||'<p class="hint">周回特典はまだありません。</p>');
+  else if(a==='set')h+=(PN?`<p class="hint ok">${PN}</p>`:'')+fxSetHtml()+`<label class="rg">BGM音量<input type="range" id="vb" min="0" max="100" value="${Math.round(CFG.bgm*100)}"></label><label class="rg">効果音の音量<input type="range" id="vs" min="0" max="100" value="${Math.round(CFG.se*100)}"></label><div class="rg nmset"><b>主人公の名前</b><div class="nmr"><label>姓<input id="rnf" maxlength="6" value="${GAME.family}"></label><label>名<input id="rng" maxlength="6" value="${GAME.given}"></label></div><label class="nms">学園名<input id="rns" maxlength="12" value="${GAME.school}"></label><p class="hint">いまの呼ばれ方: ${GAME.nick}</p><button class="b" data-do="rename" type="button">名前・学園名を変更する</button></div>`
+   +[1,2,3].map(n=>{const d=ld('sakuragaoka_slot'+n);return `<div class="slot"><span>スロット${n}<small>${d?d.sum:'空き'}</small></span><button type="button" data-do="save:${n}">保存</button><button type="button" data-do="load:${n}">読込</button></div>`}).join('')
+   +'<button class="opt" type="button" style="margin-top:12px" data-do="export">セーブを書き出す</button><button class="opt" type="button" data-do="import">セーブを読み込む</button><button class="opt" type="button" data-do="install">アプリをインストール</button>';
+ }
+ $('#pbody').classList.toggle('pinmode',a==='pin');$('#pbody').innerHTML=h;
+}
+function resume(){S.perks=S.perks||{};S.clear=S.clear||{};S.seen=S.seen||{};S.a=S.a||{};met=new Set();NOTE='';ensure();closePhone();S.fin?fin(S.fin.kind,S.fin.k):menu()}
+function pdo(a){
+ if(a.startsWith('x40:'))return x40Do(a);
+ const [c,x,y]=a.split(':');
+ if(c==='spot'){if(S.ap<2)return drawPhone();const s=H(x).spots[y];closePhone();return date(x,s[0],s[1])}
+ if(c==='save'){st('sakuragaoka_slot'+x,{S,sum:S.fin?'クリア後':`${S.loop+1}周目 ${yr()}年目${mon()}月`});PN=`スロット${x}に保存しました。`}
+ if(c==='load'){const d=ld('sakuragaoka_slot'+x);if(!d)PN='このスロットは空きです。';else{S=d.S;return resume()}}
+ if(c==='export'){const u=URL.createObjectURL(new Blob([JSON.stringify({v:1,S})],{type:'application/json'})),e=document.createElement('a');e.href=u;e.download='sakuragaoka-save.json';e.click();URL.revokeObjectURL(u);PN='セーブデータを書き出しました。'}
+ if(c==='gi'){S.gi=1;PA='grp';PN=''}
+ if(c==='replay'){closePhone();return keReplay(x)}
+ if(c==='sfwp'){if(S.sf&&S.sf[x]){S.wp=x;PN='待ち受けにしました。';save()}}
+ if(c==='cosg'){COSG=x;PN=''}
+ if(c==='cosset'){PN=cosSet(x,y);save()}
+ if(c==='letopen'){letOpen(+x)}
+ if(c==='letrp'){letReply(x,y)}
+ if(c==='jzgo'){if(S.ap>=1&&haremN()>=3){S.ap--;closePhone();return jzCeremony(menu)}}
+ if(c==='nvre'){closePhone();return nvPlay(+x,false,menu)}
+ if(c==='hspull'){closePhone();return x==='f'?hsPull(1,true):hsPull(+x)}
+ if(c==='sfgo'){closePhone();return sfManual(x)}
+ if(c==='sfre'){closePhone();return sfReplay(x+(y?':'+y:''))}
+ if(c==='setduty'){if(lifeSetDuty(x,y))return}
+ if(c==='unduty'){lifeInit();delete S.duty[x];PA='duty';PN='係を解任しました。'}
+ if(c==='import')return $('#imp').click();
+ if(c==='rename'){const f=$('#rnf').value,g=$('#rng').value;setPlayerName(f,g);setSchoolName($('#rns').value);PN=`名前を「${GAME.player}」、学園名を「${GAME.school}」に変更しました。`}
+ if(c==='install'){if(DP){DP.prompt();PN='インストール画面を開きました。'}else PN='ブラウザのメニューから「ホーム画面に追加」または「アプリをインストール」を選んでください。（iPhoneは共有ボタンから「ホーム画面に追加」）'}
+ drawPhone();
+}
+$('#pbody').onclick=e=>{const d=e.target.closest('[data-hd]');if(d)return openDetail(d.dataset.hd);const b=e.target.closest('[data-go],[data-do]');if(!b)return;if(b.dataset.do)return pdo(b.dataset.do);PA=b.dataset.go;PN='';drawPhone()};
+$('#pbody').oninput=e=>{if(e.target.id==='vb')CFG.bgm=e.target.value/100;if(e.target.id==='vs')CFG.se=e.target.value/100;vol();st('sakuragaoka_cfg',CFG)};
+$('#pclose').onclick=closePhone;
+addEventListener('keydown',e=>{if(e.key==='Escape'){if($('#dt').classList.contains('on'))closeDetail();else closePhone()}if(e.key==='Enter'&&e.target.tagName!=='BUTTON'&&e.target.dataset&&e.target.dataset.hd)openDetail(e.target.dataset.hd)});
+$('#imp').onchange=e=>{
+ const f=e.target.files[0];if(!f)return;
+ f.text().then(t=>{try{const d=JSON.parse(t);if(!d.S||typeof d.S.t!=='number')throw 0;S=d.S;resume()}catch(x){PN='読み込めないファイルです。';drawPhone()}});
+ e.target.value='';
+};
+title();
+</script>
+<script src="ending_plus.js"></script>
+<script src="mote_a23.js"></script>
+<script src="mote_b23.js"></script>
+<script src="mote_x24.js"></script>
+<script src="harem_x25.js"></script>
+<script src="harem_x26.js"></script>
+<script src="harem_x27.js"></script>
+<script src="harem_x28.js"></script>
+<script src="harem_x29.js"></script>
+<script src="harem_x30.js"></script>
+<script src="harem_x31.js"></script>
+<script src="harem_x32.js"></script>
+<script src="harem_x33.js"></script>
+<script src="harem_x34.js"></script>
+<script src="harem_x35.js"></script>
+<script src="harem_x36.js"></script>
+<script src="harem_x37.js"></script>
+<script src="harem_x38.js"></script>
+<script src="harem_x39.js"></script>
+<script src="harem_x40.js"></script>
+<script src="harem_x41.js"></script>
+<script src="harem_x42.js"></script>
+<script src="harem_x43.js"></script>
+</body>
+</html>

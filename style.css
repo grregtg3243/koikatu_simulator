@@ -1,0 +1,220 @@
+/* ===== 桜ヶ丘ストーリー スタイル =====
+   色は :root の変数で管理します(明るい端末用と暗い端末用の2か所)。
+   --gold = アクセント色 / --grad = アクセントのグラデーション / --solid = ダイアログの不透明な背景 */
+:root{--bg:#f3f0f9;--panel:rgba(255,255,255,.78);--solid:#ffffff;--p2:rgba(110,90,190,.09);--ink:#1a1830;--sub:#64607f;--gold:#d6336c;--line:rgba(110,90,190,.22);--grad:linear-gradient(135deg,#ff7eb6,#8b7bff);--glow:0 10px 30px rgba(139,123,255,.22);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#080b17;--panel:rgba(18,24,46,.72);--solid:#12182e;--p2:rgba(255,255,255,.06);--ink:#eef0fb;--sub:#9aa1bf;--gold:#ff9cc2;--line:rgba(255,255,255,.12);--glow:0 10px 34px rgba(139,123,255,.28);color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#080b17;--panel:rgba(18,24,46,.72);--solid:#12182e;--p2:rgba(255,255,255,.06);--ink:#eef0fb;--sub:#9aa1bf;--gold:#ff9cc2;--line:rgba(255,255,255,.12);--glow:0 10px 34px rgba(139,123,255,.28);color-scheme:dark}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;min-height:100vh;color:var(--ink);font-family:"Noto Sans JP","Hiragino Sans","Yu Gothic",sans-serif;line-height:1.7;background:radial-gradient(900px 520px at 8% -8%,rgba(255,126,182,.20),transparent 60%),radial-gradient(820px 520px at 100% 0,rgba(124,140,255,.22),transparent 55%),var(--bg);background-attachment:fixed}
+#app{max-width:1060px;margin:0 auto;padding:14px}
+header{display:flex;justify-content:space-between;align-items:center;padding:4px 2px 14px;margin-bottom:12px}
+h1{font:700 1.5rem "Shippori Mincho","Hiragino Mincho ProN","Yu Mincho",serif;margin:0;letter-spacing:.16em;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+#loop,#date{display:inline-block;margin-left:8px;padding:3px 14px;border-radius:99px;border:1px solid var(--line);background:var(--panel);backdrop-filter:blur(10px);font:500 .85rem "Noto Sans JP",sans-serif;color:var(--ink)}
+#loop:empty,#date:empty{display:none}
+main{display:grid;grid-template-columns:1fr 320px;gap:18px;align-items:start}
+#stage,#side{background:var(--panel);border:1px solid var(--line);border-radius:22px;backdrop-filter:blur(14px);box-shadow:var(--glow);overflow:hidden}
+#side{padding:18px}
+/* シーン */
+#scene{position:relative;overflow:hidden;height:410px;display:grid;place-items:center;background:linear-gradient(160deg,var(--s1,#1f2c46),var(--s2,#8fa3c7));padding:16px}
+#scene .pic{height:378px;position:relative;z-index:1;border-radius:12px;box-shadow:0 14px 40px rgba(0,0,0,.45)}
+#scene .big{position:relative;z-index:1}
+#scene .bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#scene.hasbg .big{display:none}
+#scene.hasbg.hp::after{content:"";position:absolute;inset:0;background:rgba(0,0,0,.28)}
+#scene .mlabel{position:absolute;left:14px;top:12px;z-index:3;display:flex;gap:10px;align-items:center;padding:5px 14px;border-radius:99px;background:rgba(10,12,26,.55);backdrop-filter:blur(8px);color:#fff;font:700 .95rem "Shippori Mincho",serif;border:1px solid rgba(255,255,255,.2)}
+#scene .mlabel small{font:500 .75rem "Noto Sans JP",sans-serif;opacity:.8}
+#scene .mlabel em{font-style:normal;color:#ff9cc2;letter-spacing:.1em;font-size:.7rem}
+.pt{position:absolute;top:-24px;width:10px;height:13px;border-radius:70% 0 70% 0;background:linear-gradient(135deg,#ffd1e3,#ff8fb8);opacity:.75;z-index:2;pointer-events:none;animation:fall 10s linear infinite}
+@keyframes fall{to{transform:translate(70px,460px) rotate(540deg)}}
+.big{font:700 7rem "Shippori Mincho",serif;color:rgba(255,255,255,.92);letter-spacing:.08em;text-shadow:0 0 40px rgba(255,126,182,.7)}
+#box{padding:18px 22px 22px;border-top:1px solid var(--line)}
+#who{display:inline-block;font:700 .95rem "Shippori Mincho",serif;color:#fff;background:var(--grad);padding:1px 14px;border-radius:99px;letter-spacing:.12em;margin-bottom:6px}
+#msg{margin:0 0 16px;min-height:3.6em;white-space:pre-line;font-size:1.05rem;line-height:1.9}
+/* ボタン */
+button{font:inherit;color:var(--ink);background:var(--p2);border:1px solid var(--line);border-radius:14px;min-height:46px;padding:8px 14px;cursor:pointer;white-space:pre-line;transition:transform .15s,background .15s,border-color .15s,box-shadow .15s}
+button:hover{border-color:var(--gold);transform:translateY(-1px);box-shadow:var(--glow)}
+button:active{transform:none}
+button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+button.p{background:var(--grad);color:#fff;border:0;font-weight:700;box-shadow:0 8px 22px rgba(255,126,182,.35)}
+#btns{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+#btns button{text-align:left}
+#btns button b{display:block;font-weight:700}
+#btns button small{display:block;font-size:.76rem;opacity:.72;font-weight:400;line-height:1.5}
+#btns button .ic{display:block;font-style:normal;font-size:1.3rem;line-height:1;margin-bottom:4px}
+#btns button.act{display:block;min-height:88px;padding:12px 14px;position:relative;overflow:hidden}
+#btns button.act::after{content:"";position:absolute;right:-18px;top:-18px;width:64px;height:64px;border-radius:50%;background:var(--grad);opacity:.14;transition:opacity .2s}
+#btns button.act:hover::after{opacity:.34}
+#btns button.off{opacity:.55}
+#btns button.act.p::after{background:#fff;opacity:.2}
+h2{font:700 .9rem "Shippori Mincho",serif;color:var(--gold);letter-spacing:.14em;margin:0 0 6px}
+.st{display:grid;grid-template-columns:3.8em 1fr 2.4em;align-items:center;gap:8px;font-size:.88rem;margin:6px 0}
+.st b{text-align:right;font-weight:500}
+.bar{display:block;height:6px;border-radius:99px;background-color:var(--p2);background-image:var(--grad);background-repeat:no-repeat;background-size:var(--w) 100%}
+.ap{display:flex;align-items:center;gap:6px;margin:2px 0 14px}
+.ap i{width:30px;height:8px;border-radius:99px;background:var(--p2);border:1px solid var(--line)}
+.ap i.on{background:var(--grad);border:0;box-shadow:0 0 12px rgba(255,126,182,.55)}
+.ap b{margin-left:auto;font-weight:500;font-size:.85rem}
+.cnt{font-size:.78rem;color:var(--sub);margin:4px 0 8px}
+.lst{max-height:435px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--gold) transparent}
+button.card{display:grid;grid-template-columns:44px 1fr;gap:12px;width:100%;height:87px;min-height:0;padding:12px 8px 12px 0;border:0;border-top:1px solid var(--line);border-radius:0;background:none;text-align:left;align-items:start}
+button.card:first-child{border-top:0}
+button.card:hover{background:var(--p2);transform:none;box-shadow:none}
+.card>div{min-width:0}
+.card .pic{height:62px}
+.card b{font-weight:500}.card small{display:block;color:var(--sub);line-height:1.45;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.r2{display:flex;justify-content:space-between;margin-bottom:5px;font-size:.9rem}
+.pic{position:relative;aspect-ratio:252/352;height:100%;overflow:hidden;background:linear-gradient(160deg,var(--c,#555),#0d1320);outline:1px solid rgba(255,255,255,.35);outline-offset:-1px;border-radius:8px}
+.pic span{position:absolute;inset:0;display:grid;place-items:center;font:700 2.2rem "Shippori Mincho",serif;color:rgba(255,255,255,.55);writing-mode:vertical-rl;margin:auto}
+.card .pic span{font-size:.9rem}
+.pic img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+@media(max-width:800px){main{grid-template-columns:1fr}#scene{height:290px}#scene .pic{height:258px}.big{font-size:5rem}}
+/* 女性の詳細 */
+#dt{position:fixed;inset:0;z-index:70;display:none;align-items:center;justify-content:center;background:rgba(5,8,14,.74);backdrop-filter:blur(6px);padding:14px}
+#dt.on{display:flex}
+.dtb{position:relative;width:min(780px,100%);max-height:94vh;overflow:auto;background:var(--solid);border:1px solid var(--line);border-radius:24px;box-shadow:var(--glow);padding:24px;display:grid;grid-template-columns:252px 1fr;gap:28px}
+#dtx{position:absolute;top:8px;right:8px;min-height:36px;width:36px;padding:0;border:0;border-radius:50%;font-size:1.2rem}
+.dtp .pic{height:352px}
+.dtb p{margin:6px 0}
+.dtn{font:700 1.5rem "Shippori Mincho",serif;letter-spacing:.1em;margin:0 0 4px}
+.dtk{display:flex;align-items:baseline;gap:10px;margin:14px 0 6px}
+.dtk b{font:700 2.4rem "Shippori Mincho",serif;color:var(--gold);line-height:1}
+#dti .bar{height:8px}
+.hx{width:100%;max-width:310px;display:block;margin:10px auto 0;overflow:visible}
+.hx .gl{fill:none;stroke:var(--line)}
+.hx .pg{fill:var(--gold);fill-opacity:.28;stroke:var(--gold);stroke-width:2;stroke-linejoin:round;filter:drop-shadow(0 0 7px var(--gold));transform-origin:130px 130px;animation:grow .8s cubic-bezier(.2,.8,.2,1)}
+.hx circle{fill:var(--gold)}
+.hx text{fill:var(--ink);font-size:12px}
+.hx .v{fill:var(--gold);font-weight:700;font-size:13px}
+.hint2{color:var(--sub);font-size:.85rem;text-align:center}
+@keyframes grow{from{transform:scale(.05);opacity:0}}
+@media(max-width:700px){.dtb{grid-template-columns:1fr;justify-items:center}.dtp .pic{height:260px}}
+.pp{cursor:pointer}
+/* スマホ */
+#phone{position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;background:rgba(5,8,14,.72);backdrop-filter:blur(8px)}
+#phone.on{display:flex}
+.dev{width:min(370px,94vw);height:min(700px,90vh);background:#06090f;border-radius:44px;padding:10px;box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 0 1px #2c3445,0 0 60px rgba(139,123,255,.25)}
+.scr{height:100%;border-radius:35px;overflow:hidden;background:radial-gradient(120% 60% at 20% 0,rgba(255,126,182,.22),transparent 60%),linear-gradient(170deg,#1b2040,#0a0e1a 70%);color:#eef0fb;display:flex;flex-direction:column}
+.sb{display:flex;justify-content:space-between;align-items:center;padding:12px 22px 4px;font:500 .8rem "Shippori Mincho",serif}
+.sb button{min-height:28px;padding:0 10px;border:0;color:#eef0fb;font-size:1.1rem}
+#pbody{flex:1;overflow:auto;padding:6px 16px 18px}
+#pbody.pinmode{display:flex;flex-direction:column;padding:6px 8px 10px}
+#pbody.pinmode .ph{padding-left:8px}
+.pinf{flex:1;min-height:0;width:100%;border:0;border-radius:20px;background:#07060f}
+#pbody button{color:#eef0fb;border-color:rgba(255,255,255,.16)}
+#pbody button:hover{background:rgba(255,156,194,.14)}
+.apps{display:grid;grid-template-columns:repeat(3,1fr);gap:26px 6px;padding:34px 4px}
+.app{display:flex;flex-direction:column;align-items:center;gap:8px;border:0!important;background:none!important;font-size:.78rem;min-height:0}
+.app i{width:58px;height:58px;border-radius:18px;display:grid;place-items:center;font:700 1.5rem "Shippori Mincho",serif;font-style:normal;background:var(--g);color:#fff;box-shadow:0 8px 18px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.3)}
+.ph{display:flex;align-items:center;gap:10px;padding:6px 0 12px;font:700 1rem "Shippori Mincho",serif}
+.ph button{border:0;background:none;font-size:.85rem;color:#ff9cc2!important;min-height:30px;padding:0}
+.ct{display:flex;gap:12px;width:100%;text-align:left;align-items:center;margin-bottom:8px;padding:8px}
+.ct small,.pp small,.slot small{display:block;color:#a9b2c4;font-size:.78rem;line-height:1.4}
+.th{width:44px;flex:none}.th .pic{height:62px}.th.big{width:70px}.th.big .pic{height:98px}
+.pp{display:flex;gap:12px;padding:10px 0;border-top:1px solid rgba(255,255,255,.12)}
+.pp em{margin-left:8px;font-style:normal;font-size:.72rem;color:#ff9cc2}
+.bub{background:rgba(255,156,194,.16);border-radius:6px 18px 18px 18px;padding:10px 14px;margin:0 20% 10px 0;font-size:.92rem}
+.hint{color:#a9b2c4;font-size:.8rem;margin:6px 0 12px}.hint.ok{color:#ff9cc2}
+.opt{display:block;width:100%;margin-bottom:8px;text-align:left;padding:10px 14px}
+.ev{display:flex;justify-content:space-between;gap:10px;padding:9px 6px;border-top:1px solid rgba(255,255,255,.1);font-size:.88rem}
+.ev.now{background:rgba(255,156,194,.16);border-radius:8px}
+#pbody .st{margin:8px 0}#pbody .bar{background-color:rgba(255,255,255,.12)}
+.rg{display:block;font-size:.85rem;margin:8px 0}.rg input{display:block;width:100%;accent-color:#ff9cc2}
+.slot{display:grid;grid-template-columns:1fr auto auto;gap:6px;align-items:center;padding:8px 0;border-top:1px solid rgba(255,255,255,.1);font-size:.88rem}
+.slot button{min-height:34px}
+#pbody .opt:first-of-type{margin-top:6px}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+.meetb{display:block;width:100%;margin-top:14px}
+button:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+
+/* 所持金 */
+.money{display:flex;justify-content:space-between;align-items:baseline;margin:10px 0 4px;padding:8px 14px;border-radius:14px;background:var(--p2);border:1px solid var(--line);font-size:.88rem}
+.money b{font:700 1.1rem "Noto Sans JP",sans-serif;font-variant-numeric:tabular-nums;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+/* 女子の一覧(100人以上向け: 検索・並べ替え・絞り込み・もっと見る) */
+.lctl{display:grid;gap:8px;margin:6px 0 10px}
+.lsel{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.lctl input,.lctl select{width:100%;min-width:0;min-height:38px;padding:6px 10px;font:inherit;font-size:.85rem;color:var(--ink);background:var(--p2);border:1px solid var(--line);border-radius:12px}
+.lctl input:focus-visible,.lctl select:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
+button.more{display:block;width:100%;margin:8px 0 4px;min-height:40px;font-size:.88rem}
+.scr{color-scheme:dark}
+#pbody .lctl input,#pbody .lctl select{color:#eef0fb;background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.16)}
+#pbody .lctl{position:sticky;top:-6px;z-index:2;padding:6px 0;margin:0 0 6px;background:linear-gradient(#141a33 70%,transparent)}
+#pbody .money{margin:8px 0}
+.ev.lock{opacity:.55}
+.ev small{color:var(--sub);font-size:.78rem}
+#pbody .ev small{color:#a9b2c4}
+@media(max-width:520px){header{flex-wrap:wrap;gap:8px}h1{font-size:1.15rem;letter-spacing:.08em;white-space:nowrap}#loop,#date{margin-left:0;margin-right:6px}}
+
+/* 主人公の名前の入力 */
+#nmd{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;background:rgba(8,12,20,.72);backdrop-filter:blur(6px);padding:16px}
+#nmd .nmc{width:min(420px,100%);background:#141b2b;color:#f1ebe0;border:1px solid rgba(255,156,194,.5);border-radius:10px;padding:24px 22px}
+#nmd h2{margin:0 0 8px;font-size:1.25rem}#nmd p{margin:0 0 14px;font-size:.9rem}#nmd b{color:#ff9cc2}
+.nmr{display:flex;gap:10px}.nmr label{flex:1;font-size:.8rem}.nmr input{display:block;width:100%;box-sizing:border-box;margin-top:4px;padding:9px 10px;font:inherit;font-size:1rem;border-radius:6px;border:1px solid rgba(255,156,194,.5);background:#0b101b;color:#f1ebe0}
+#nmd .nmb{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}#nmd .nmb button{flex:1;min-width:140px;padding:10px;font:inherit;border-radius:6px;border:1px solid rgba(255,156,194,.5);background:transparent;color:#f1ebe0;cursor:pointer}
+#nmd .nmb .p{background:#ff9cc2;color:#1a1020;border-color:#ff9cc2;font-weight:700}
+.nmset .nmr input{background:#fff;color:#222}.nmset .b{margin-top:6px;padding:8px 12px;border-radius:6px;border:0;background:#ff9cc2;cursor:pointer;font:inherit}
+
+.nms{display:block;margin-top:10px;font-size:.8rem}.nms input{display:block;width:100%;box-sizing:border-box;margin-top:4px;padding:9px 10px;font:inherit;font-size:1rem;border-radius:6px;border:1px solid rgba(255,156,194,.5);background:#0b101b;color:#f1ebe0}.nmset .nms input{background:#fff;color:#222}
+
+/* スマホアイコンの未読バッジ */
+.app{position:relative}.app .bdg{position:absolute;top:-6px;right:calc(50% - 40px);min-width:22px;padding:2px 6px;border-radius:999px;background:#ef4444;color:#fff;font:700 .72rem/1.3 system-ui,sans-serif;font-style:normal;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.4)}
+
+/* 女性一覧: 縦に伸びすぎないよう、右のパネルを画面内に収めて、一覧だけをスクロールにする */
+@media(min-width:801px){
+ #side{position:sticky;top:12px;max-height:calc(100vh - 24px);display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden}
+ #side .lst{flex:1 1 auto;min-height:220px;max-height:none;overflow-y:auto}
+}
+@media(max-width:800px){#side .lst{max-height:60vh}}
+.lctl>select{width:100%;min-width:0;min-height:38px;padding:6px 10px;font:inherit;font-size:.85rem;color:var(--ink);background:var(--p2);border:1px solid var(--line);border-radius:12px}
+#pbody .lctl>select{color:#eef0fb;background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.16)}
+.rtag{margin-left:6px;padding:1px 7px;border-radius:99px;font:600 .68rem/1.5 system-ui,sans-serif;font-style:normal;color:#fff;background:#6d5bd0;vertical-align:middle}
+/* 見守る会(グループチャット) */
+.crow{display:flex;gap:8px;align-items:flex-start;margin:0 0 10px}
+.crow>div{min-width:0;flex:1}.crow b{font-size:.78rem;color:#b8c0d8;font-weight:600}
+.crow .bub{margin:2px 20% 0 0;word-break:break-word}.crow .bub.hot{background:rgba(255,92,140,.22);border:1px solid rgba(255,120,160,.4)}
+.cav{width:36px;height:36px;flex:none;border-radius:50%;overflow:hidden;display:grid;place-items:center;color:#fff;font:700 .95rem system-ui,sans-serif;background:#555}
+.cav .pic{width:36px;height:36px;aspect-ratio:1;border-radius:0;outline:0}.cav .pic img{object-position:50% 12%}.cav .pic span{font-size:.62rem;writing-mode:horizontal-tb}
+.cintro{padding:6px 4px}.cintro h3{margin:4px 0 10px;font-size:1.05rem}.cintro p{margin:0 0 10px;font-size:.9rem;line-height:1.7}
+
+/* 通り名 */
+.ttl{margin:2px 0 14px;font:700 1rem "Shippori Mincho",serif;color:var(--ink);padding:6px 12px;border-radius:12px;background:var(--p2);border:1px solid var(--line);text-align:center;letter-spacing:.06em}
+h3.sch{margin:16px 0 6px;font-size:.95rem}
+/* メイン画面の縁からのぞく女子たち / 舞うハート */
+#scene{position:relative}
+.peek{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:3}
+.pk{position:absolute;width:46px;filter:drop-shadow(0 4px 8px rgba(0,0,0,.35));transform:rotate(var(--r,0deg));animation:pkbob 5s ease-in-out infinite;opacity:.92}
+.pk .pic{height:64px;border-radius:10px;outline:2px solid rgba(255,255,255,.7)}
+@keyframes pkbob{0%,100%{transform:rotate(var(--r,0deg)) translateY(0)}50%{transform:rotate(var(--r,0deg)) translateY(-6px)}}
+.hrt{position:absolute;bottom:8%;color:#ff6fa5;z-index:4;pointer-events:none;opacity:0;animation:hrtup 2.2s ease-out forwards;text-shadow:0 2px 8px rgba(255,80,140,.5)}
+@keyframes hrtup{0%{opacity:0;transform:translateY(0) scale(.6)}15%{opacity:1}100%{opacity:0;transform:translateY(-240px) scale(1.2)}}
+@media(prefers-reduced-motion:reduce){.pk,.hrt{animation:none}.hrt{display:none}}
+#scene .pk .pic{height:64px;box-shadow:none;border-radius:10px;z-index:auto}
+@media(max-width:800px){#scene .pk .pic{height:52px}.pk{width:37px}}
+
+/* 行事の「全員と過ごす」: 小さな顔アイコンがずらりと並ぶ */
+.crowd{position:absolute;left:2%;right:2%;top:10%;bottom:7%;display:flex;flex-wrap:wrap;justify-content:center;align-content:flex-end;gap:3px;z-index:3;pointer-events:none;overflow:hidden}
+.cw{width:var(--sz,46px);margin:0 -5px -2px;filter:drop-shadow(0 3px 6px rgba(0,0,0,.35));transform:rotate(var(--r,0deg));animation:cwbob 1.7s ease-in-out infinite}
+#scene .cw .pic{height:calc(var(--sz,46px)*1.4);box-shadow:none;border-radius:10px;z-index:auto;outline:2px solid rgba(255,255,255,.75)}
+@keyframes cwbob{0%,100%{transform:rotate(var(--r,0deg)) translateY(0)}50%{transform:rotate(var(--r,0deg)) translateY(-8px)}}
+@media(prefers-reduced-motion:reduce){.cw{animation:none}}
+
+/* ハーレム度ゲージと、段階ごとの画面の飾り */
+.hg{margin:2px 0 14px;padding:8px 12px;border-radius:12px;background:var(--p2);border:1px solid var(--line)}
+.hg b{display:block;margin-bottom:5px;font-size:.88rem;color:var(--ink)}
+.hg small{display:block;margin-top:5px;font-size:.72rem;color:var(--sub)}
+body[data-hs="1"] #scene{box-shadow:0 6px 24px rgba(255,150,190,.22)}
+body[data-hs="2"] #scene{box-shadow:0 6px 28px rgba(255,130,180,.34)}
+body[data-hs="3"] #scene{box-shadow:0 6px 32px rgba(255,110,170,.45),0 0 0 2px rgba(255,170,205,.45)}
+body[data-hs="3"] .ttl,body[data-hs="3"] .hg b{color:#e11d74}
+body[data-hs="4"] #scene{box-shadow:0 8px 36px rgba(255,90,160,.55),0 0 0 2px rgba(255,140,190,.7)}
+body[data-hs="4"] .ttl,body[data-hs="4"] .hg b{color:#e11d74}
+body[data-hs="5"] #scene{box-shadow:0 8px 42px rgba(255,70,150,.62),0 0 0 3px rgba(255,120,185,.85)}
+body[data-hs="5"] .ttl,body[data-hs="5"] .hg b{color:#d6106a}
+body[data-hs="6"] #scene{box-shadow:0 8px 48px rgba(255,60,140,.7),0 0 0 3px #ffb3d6;animation:hsglow 3.2s ease-in-out infinite}
+body[data-hs="6"] .ttl,body[data-hs="6"] .hg b{color:#d6106a}
+@keyframes hsglow{0%,100%{box-shadow:0 8px 48px rgba(255,60,140,.7),0 0 0 3px #ffb3d6}50%{box-shadow:0 8px 56px rgba(160,100,255,.7),0 0 0 3px #d7c0ff}}
+@media(prefers-reduced-motion:reduce){body[data-hs="6"] #scene{animation:none}}
+
+#phone .hg{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.14)}
+#phone .hg b{color:#fff}
+#phone .hg small{color:#a9b2c4}
