@@ -87,7 +87,33 @@ const H=id=>HEROINES.find(h=>h.id===id),
  bar=(v,m)=>`<i class="bar" style="--w:${Math.min(100,v/m*100)}%"></i>`;
 
 /* 画像(img/番号.jpg)。無いときは名字の仮表示 */
-function pic(h){return `<div class="pic" style="--c:${h.c}"><span>${h.n.split(' ')[0]}</span><img src="img/${h.img}.jpg" alt="${h.n}" width="252" height="352" loading="lazy" decoding="async" onerror="this.remove()"></div>`}
+
+function pic(h){return `<div class="pic" style="--c:${h.c}"><span>${h.n.split(' ')[0]}</span><img src="img/${h.img}.jpg" alt="${h.n}" width="252" height="352" loading="eager" decoding="async" fetchpriority="high" onerror="this.remove()"></div>`}
+
+
+/* ===== 画像の先読み・背景の再利用(読み込みのラグ対策) ===== */
+const bgNG=new Set(),bgOK=new Set(),faceDone=new Set();
+function bgBad(im){const u=im.getAttribute('src');bgNG.add(u);const f=im.dataset.f;if(f&&f!==u&&!bgNG.has(f)){im.dataset.f='';im.dataset.k=f;im.src=f}else im.remove()}
+function bgMake(src,fb){
+ if(!src)return null;
+ const im=document.createElement('img');im.className='bg';im.alt='';im.decoding='async';im.dataset.f=fb||'';im.dataset.k=src;
+ im.onload=()=>{bgOK.add(im.getAttribute('src'));if(im.parentNode)im.parentNode.classList.add('hasbg')};
+ im.onerror=()=>bgBad(im);im.src=src;return im;
+}
+function bgPreload(list){list.forEach(u=>{if(!u||bgOK.has(u)||bgNG.has(u))return;const i=new Image();i.decoding='async';i.onload=()=>bgOK.add(u);i.onerror=()=>bgNG.add(u);i.src=u})}
+bgPreload([GAME.bg.title,GAME.bg.menu].concat(Array.from({length:12},(_,i)=>GAME.bg.month.replace('{MM}',String(i+1).padStart(2,'0')))));
+function idleFaces(){
+ try{
+  if(!S||idleFaces.t)return;
+  const run=()=>{idleFaces.t=0;try{
+   const todo=Object.keys(S.got||{}).concat(Object.keys(S.seen||{})).filter((id,i,a)=>a.indexOf(id)===i&&!faceDone.has(id)).slice(0,6);
+   todo.forEach(id=>{faceDone.add(id);const h=H(id);if(h&&h.img){const i=new Image();i.decoding='async';i.src='img/'+h.img+'.jpg'}});
+   if(todo.length===6)idleFaces();
+  }catch(e){}};
+  idleFaces.t=1;
+  (window.requestIdleCallback?requestIdleCallback(run,{timeout:2500}):setTimeout(run,600));
+ }catch(e){}
+}
 
 /* 音 */
 let AC=null,BG=null;
@@ -108,23 +134,18 @@ function side(){
  el.innerHTML=`<h2>通り名</h2><div class="ttl">${moteTitle().name}</div><h2>行動力</h2><div class="ap">${[0,1,2,3].map(i=>`<i class="${i<S.ap?'on':''}"></i>`).join('')}<b>${S.ap}/4</b></div><h2>能力</h2>`
  +Object.entries(ST).map(([k,l])=>`<div class="st"><span>${l}</span>${bar(S.st[k],cap())}<b>${S.st[k]}</b></div>`).join('')+`<div class="st"><span>疲れ</span>${bar(S.f,10)}<b>${S.f}</b></div><div class="money"><span>所持金</span><b>${yen(S.money)}</b></div><h2 style="margin-top:18px">女性一覧</h2>${listCtl('side')}<div class="lst" data-lbody="side">${listBody('side',rowSide)}</div>`;
 }
-/* 画像の先読み: 背景(タイトル/メニュー/12か月)を起動時に読み込み、顔画像は出会い済みの子を暇なときに読み込む。
-   読み込めなかった背景は BGNG に記録し、毎回404を出さずに次の候補へ進む。 */
-const BGOK={},BGNG={},FACEW={};
-function warmImg(src,rec){const i=new Image();i.decoding='async';if(rec){i.onload=()=>{BGOK[src]=1};i.onerror=()=>{BGNG[src]=1}}i.src=src}
-function warmBg(){try{const b=GAME.bg;[b.title,b.menu].forEach(u=>u&&warmImg(u,1));for(let m=1;m<=12;m++)warmImg(b.month.replace('{MM}',String(m).padStart(2,'0')),1)}catch(e){}}
-function warmFaces(){if(!S||!S.a)return;const idle=window.requestIdleCallback||(f=>setTimeout(f,200));
- idle(()=>{Object.keys(S.a).forEach(id=>{if(FACEW[id])return;FACEW[id]=1;const h=H(id);if(h&&h.img)warmImg('img/'+h.img+'.jpg')})})}
-warmBg();
 function show(k,t,b){
  const h=k&&H(k);
  $('#who').textContent=h?h.n:'';$('#who').hidden=!h;$('#msg').textContent=t;
- let sc=$('#scene'),mm=S?(S.fin?3:mon()):0,bs=S?[GAME.bg.month.replace('{MM}',String(mm).padStart(2,'0')),GAME.bg.menu]:[GAME.bg.title,GAME.bg.menu];
- bs=bs.filter((u,i)=>!BGNG[u]||i===bs.length-1);if(bs.length<2)bs.push('');sc.className=h?'hp':'';
+ const sc=$('#scene'),mm=S?(S.fin?3:mon()):0,bs=S?[GAME.bg.month.replace('{MM}',String(mm).padStart(2,'0')),GAME.bg.menu]:[GAME.bg.title,GAME.bg.menu];
+ sc.className=h?'hp':'';
  const chip=S?(S.fin?'<span class="mlabel">卒業</span>':`<span class="mlabel">${mm}月<small>第${Math.min(4,5-S.ap)}週</small><em>${'●'.repeat(S.ap)}${'○'.repeat(4-S.ap)}</em></span>`):'',
   pt=[0,1,2,3,4,5,6].map(i=>`<i class="pt" style="left:${6+i*14}%;animation-duration:${9+i%3*3}s;animation-delay:${-i*1.7}s"></i>`).join('');
- sc.innerHTML=`<img class="bg" src="${bs[0]}" data-f="${bs[1]}" alt="" onload="this.parentNode.classList.add('hasbg')" onerror="var f=this.dataset.f;if(f){this.dataset.f='';this.src=f}else this.remove()">`+pt+(h?pic(h).replace('loading="lazy"','loading="eager"'):`<div class="big">${S&&!S.fin?mon()+'月':'桜'}</div>`)+chip+(CROWD?crowdHtml(CROWD):(S&&!S.fin?peekHtml():''))+(S&&!S.fin?heartHtml():'');
- warmFaces();
+ const oldBg=sc.querySelector('img.bg');let bgSrc=bs[0],bgFb=bs[1];if(bgNG.has(bgSrc)){bgSrc=bgFb;bgFb=''}
+ sc.innerHTML=pt+(h?pic(h):`<div class="big">${S&&!S.fin?mon()+'月':'桜'}</div>`)+chip+(CROWD?crowdHtml(CROWD):(S&&!S.fin?peekHtml():''))+(S&&!S.fin?heartHtml():'');
+ {const bg=(oldBg&&oldBg.dataset.k===bgSrc)?oldBg:(bgNG.has(bgSrc)?null:bgMake(bgSrc,bgFb));
+  if(bg){sc.insertBefore(bg,sc.firstChild);if(bg.complete&&bg.naturalWidth>0)sc.classList.add('hasbg')}}
+ idleFaces();
  const bt=$('#btns');bt.innerHTML='';
  b.forEach(([l,f,c,ic])=>{
   const e=document.createElement('button');e.type='button';if(c)e.className=c;
@@ -457,5 +478,6 @@ title();
 <script src="harem_x41.js"></script>
 <script src="harem_x42.js"></script>
 <script src="harem_x43.js"></script>
+<script src="gourei_novel.js"></script>
 </body>
 </html>

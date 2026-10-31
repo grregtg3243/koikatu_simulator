@@ -128,7 +128,7 @@ const ACH=[
  {id:'hsur10',n:'UR常連',d:'URのご奉仕を10回',r:200000,ok:()=>cn('hsur')>=10},
  {id:'hscomp',n:'ご奉仕コンプ',d:'すべてのご奉仕・全レア度をそろえる',r:500000,ok:()=>{const c=(S.hs&&S.hs.c)||{};return typeof HS_TYPES!=='undefined'&&Object.keys(c).length>=HS_TYPES.length*4}},
  {id:'nv4',n:'物語の半ば',d:'特別章を4章まで読む',r:30000,ok:()=>cn('nvch')>=4},
- {id:'nv8',n:'桜ヶ丘ストーリー、完',d:'特別章を全8章読む',r:200000,ok:()=>cn('nvch')>=8},
+ {id:'nv8',n:'コイカツストーリー、完',d:'特別章を全8章読む',r:200000,ok:()=>cn('nvch')>=8},
  {id:'pk6',n:'主役はみんな',d:'今月の主役を6回迎える',r:10000,ok:()=>cn('pickup')>=6},
  {id:'pk24',n:'毎月が主役',d:'今月の主役を24回迎える',r:60000,ok:()=>cn('pickup')>=24},
  {id:'np12',n:'購読者',d:'学園新聞を12号 受け取る',r:10000,ok:()=>cn('news')>=12},
