@@ -19,7 +19,7 @@ function xhudHtml(){
  const h=p.id&&H(p.id),all=avail().length||1,n=typeof haremN==='function'?haremN():0,pc=Math.min(100,Math.round(n/all*100));
  let x='<div class="xhud">';
  if(h)x+=`<div class="xt">✨ 今月の主役</div><div class="xp"><img src="img/${h.img}" alt="" onerror="this.style.display='none'"><div><b>${h.n.split(' ').join('')}</b><small>好感度 ${favOf(h)} ／ ご奉仕で3倍出やすい</small></div></div>`;
- x+=`<div class="xt" style="margin-top:8px">💗 学園の女子${all}人、全員が、あなたに注目中</div>`;
+ x+=`<div class="xt" style="margin-top:8px">💗 学園の女子全員が、あなたに興味津々だけど緊張している</div>`;
  x+=`<div class="xm"><span>ハーレム度</span><span>${n}人 / ${all}人(${pc}%)</span></div><div class="xg"><i style="width:${pc}%"></i></div>`;
  try{const m=S.mx;if(m){x+=`<div class="xm" style="margin-top:6px"><span>📜 憲章 ${m.ch||0}条 ／ 🏛 専用 ${Object.keys(m.sp||{}).length}か所</span><span>🚃 他校・街 ${m.out?m.out.n:0}回</span></div>`}}catch(e){}
  if(typeof rankNow==='function'){try{x+=`<div class="xr">${rankNow().n}</div>`}catch(e){}}
