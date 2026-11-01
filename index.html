@@ -63,9 +63,9 @@ const $=s=>document.querySelector(s),R=(a,b)=>a+Math.floor(Math.random()*(b-a+1)
 const ST={study:'学力',sport:'体力',art:'直感',charm:'魅力'};
 const SEA=m=>m>=3&&m<=5?['#5b3a66','#c98fa6']:m>=6&&m<=8?['#1f4a66','#6fb0c4']:m>=9&&m<=11?['#5a3320','#d19a5c']:['#1f2c46','#8fa3c7'];
 const PERKS=[['grow','成長の心得','能力の上昇量が毎回+1'],['stamina','鉄の体力','鍛えても疲れにくくなる'],['aura','モテオーラ','周回開始時、全員の好感度+10'],['date','デートの達人','デートの好感度+2'],['genius','秀才の記憶','定期テストの基準が下がる'],['lucky','出会い運','出会いイベントが起きやすい']];
-const APPS_ALL=[['msg','話','メッセージ','#3f8f6b'],['ppl','縁','連絡先','#b0566e'],['cal','暦','カレンダー','#c68a3a'],['me','力','ステータス','#4a6fa5'],['ach','績','実績','#d97706'],['grp','見','見守る会','#16a34a'],['fc','会','ファン会','#e11d74'],['alb','絵','アルバム','#8b5cf6'],['sf','撮','自撮り','#ec4899'],['let','文','手紙','#f43f5e'],['end','結','結末','#0ea5e9'],['hs','奉','ご奉仕','#f97316'],['nv','章','特別章','#0891b2'],['sp','専','専用','#b45309'],['jz','誓','嫉妬ゼロ','#db2777'],['np','報','新聞','#b45309'],['mn','独','独白','#be185d'],['og','隊','親衛隊','#4f46e5'],['cos','着','着せ替え','#f472b6'],['duty','係','専属係','#0d9488'],['pin','球','ピンボール','#7c3aed'],['inbox','届','通知','#e11d74'],['tick','券','お願い券','#f59e0b'],['rep','評','評判','#0ea5e9'],['gv','密','女子会','#a855f7'],['set','設','設定','#6b7280']];
+const APPS_ALL=[['msg','話','メッセージ','#3f8f6b'],['ppl','縁','連絡先','#b0566e'],['cal','暦','カレンダー','#c68a3a'],['me','力','ステータス','#4a6fa5'],['ach','績','実績','#d97706'],['grp','見','見守る会','#16a34a'],['fc','会','ファン会','#e11d74'],['alb','絵','アルバム','#8b5cf6'],['sf','撮','自撮り','#ec4899'],['let','文','手紙','#f43f5e'],['end','結','結末','#0ea5e9'],['hs','奉','ご奉仕','#f97316'],['nv','章','特別章','#0891b2'],['sp','専','専用','#b45309'],['jz','誓','嫉妬ゼロ','#db2777'],['np','報','新聞','#b45309'],['mn','独','独白','#be185d'],['og','隊','親衛隊','#4f46e5'],['cos','着','着せ替え','#f472b6'],['duty','係','専属係','#0d9488'],['pin','球','ピンボール','#7c3aed'],['inbox','届','通知','#e11d74'],['ph','写','囲まれ写真','#f472b6'],['dy','日','みんなの日記','#8b5cf6'],['tick','券','お願い券','#f59e0b'],['rep','評','評判','#0ea5e9'],['gv','密','女子会','#a855f7'],['set','設','設定','#6b7280']];
 /* 整理: 重複していた「学園新聞(news)」「心の声(mono)」は非表示(新聞/独白に統一)。ホームは主要アプリのみ、残りは「その他」フォルダへ */
-const APPS_MORE_KEYS=['sf','cos','end','nv','sp','jz','duty','pin','inbox','tick','rep','gv'];
+const APPS_MORE_KEYS=['sf','cos','end','nv','sp','jz','duty','pin','inbox','tick','rep','gv','ph','dy'];
 const APPS=APPS_ALL.filter(a=>!APPS_MORE_KEYS.includes(a[0])).concat([['more','他','その他','#64748b']]);
 const APPS_MORE=APPS_ALL.filter(a=>APPS_MORE_KEYS.includes(a[0]));
 const TTL={msg:'メッセージ',ppl:'連絡先',cal:'カレンダー',me:'ステータス',ach:'実績',grp:'見守る会',fc:'ファンクラブ',duty:'専属係',alb:'アルバム',sf:'自撮り',let:'手紙',end:'結末',hs:'ご奉仕',nv:'特別章',news:'学園新聞',sp:'専用スペース',mono:'女子の心の声',jz:'嫉妬ゼロ宣言',np:'学園新聞',mn:'女子の独白',og:'親衛隊と専用スペース',cos:'着せ替え',pin:'ピンボール',set:'設定'};
@@ -397,6 +397,8 @@ function drawPhone0(){
   else if(a==='tick')h+=(PN?`<p class="hint ok">${PN}</p>`:'')+x40TicketHtml();
   else if(a==='rep')h+=x40RepHtml();
   else if(a==='gv')h+=x40GvHtml();
+  else if(a==='ph')h+=(PN?`<p class="hint ok">${PN}</p>`:'')+x45PhotoHtml();
+  else if(a==='dy')h+=x45DiaryHtml();
   else if(a==='hs')h+=hsHtml();
   else if(a==='nv')h+=nvHtml();
   else if(a==='news')h+=newsHtml();
@@ -420,6 +422,7 @@ function drawPhone0(){
 function resume(){S.perks=S.perks||{};S.clear=S.clear||{};S.seen=S.seen||{};S.a=S.a||{};met=new Set();NOTE='';ensure();closePhone();S.fin?fin(S.fin.kind,S.fin.k):menu()}
 function pdo(a){
  if(a.startsWith('x40:'))return x40Do(a);
+ if(a.startsWith('x45:'))return x45Do(a);
  const [c,x,y]=a.split(':');
  if(c==='spot'){if(S.ap<2)return drawPhone();const s=H(x).spots[y];closePhone();return date(x,s[0],s[1])}
  if(c==='save'){st('sakuragaoka_slot'+x,{S,sum:S.fin?'クリア後':`${S.loop+1}周目 ${yr()}年目${mon()}月`});PN=`スロット${x}に保存しました。`}
@@ -478,6 +481,8 @@ title();
 <script src="harem_x41.js"></script>
 <script src="harem_x42.js"></script>
 <script src="harem_x43.js"></script>
+<script src="harem_x45.js"></script>
+<script src="harem_x46.js"></script>
 <script src="gourei_novel.js"></script>
 </body>
 </html>
